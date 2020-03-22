@@ -97,27 +97,35 @@ class Result():
 
 
 def capstone(arch, mode, hex, syntax):
-    hex_bytes = binascii.unhexlify(hex)
-    print('Bytes: %s' % binascii.hexlify(hex_bytes, '-'), file=sys.stderr)
-    result = Result();
+    hex_bytes = binascii.unhexlify(hex)                                 # Convert a string of hex to a byte string 
+    print('Bytes: %s' % binascii.hexlify(hex_bytes, '-'), file=sys.stderr) 
+    result = Result(); 
 
+    # Execute the capstone  
     md = Cs(arch, mode)
-    for insn in md.disasm(hex_bytes, 0x0000):
+    for insn in md.disasm(hex_bytes, 0x0000):                           # Go through the array return after a successful execution
         print('Insn Bytes: %s ' % insn.bytes, file=sys.stderr)
-        result.machine_code.append(binascii.hexlify(insn.bytes, '-'))
+        result.machine_code.append(binascii.hexlify(insn.bytes, '-'))   # Convert bytes into an hex array 
         print('Insn: %s ' % insn.mnemonic, file=sys.stderr)
-        result.instructions.append(insn.mnemonic)
-        print('Op_Str: %s ' % insn.op_str, file=sys.stderr)
-        result.operands.append(insn.op_str)
+        result.instructions.append(insn.mnemonic)                       # Instructions that were disassembled
+        print('Operand: %s ' % insn.op_str, file=sys.stderr)
+        result.operands.append(insn.op_str)                             # Operands 
         print('Size: %s ' % insn.size, file=sys.stderr)
-        result.byte_size.append(insn.size)
+        result.byte_size.append(insn.size)                              # the number of bytes 
         print('Address: %s ' % insn.address, file=sys.stderr)
-        result.addresses.append(insn.address)
+        result.addresses.append(insn.address)                           # the next start address 
 
+    # Generate the data object that is return as a json
     data = {
         'arch': get_arch_str(arch),
         'mode': get_mode_str(mode),
-        'result': generate_result_json(result)
+        'result': {
+            'mach_code': result.machine_code,
+            'instructions': result.instructions,
+            'operands': result.operands,
+            'byte_size': result.byte_size,
+            'addresses': result.addresses
+        }
     }
 
     return jsonify(data)

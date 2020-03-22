@@ -24,7 +24,7 @@
 	],
 
 	// Comment out next line to run as root
-	"remoteUser": "vscode",
+	// "remoteUser": "vscode",
 
 	// Add the IDs of extensions you want installed when the container is created in the array below.
 	"extensions": [
