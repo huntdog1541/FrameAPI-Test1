@@ -9,8 +9,8 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def hello_world():
-    return 'Hello World!'
+def status():
+    return 'Up and Running'
 
 
 cs_arch_dict = {
@@ -32,7 +32,34 @@ cs_arch_dict = {
 cs_mode_dict = {
     "X16": CS_MODE_16,
     "X32": CS_MODE_32,
-    "X64": CS_MODE_64
+    "X64": CS_MODE_64,
+    "ARM": CS_MODE_ARM,
+    "THUMB": CS_MODE_THUMB,
+    "MCLASS": CS_MODE_MCLASS,
+    "MICRO": CS_MODE_MICRO,
+    "MIPS3": CS_MODE_MIPS3,
+    "MIPS32R6": CS_MODE_MIPS32R6,
+    "MIPS2": CS_MODE_MIPS2,
+    "V8": CS_MODE_V8,
+    "V9": CS_MODE_V9,
+    "QPX": CS_MODE_QPX,
+    "M68K_000": CS_MODE_M68K_000,
+    "M68K_010": CS_MODE_M68K_010,
+    "M68K_020": CS_MODE_M68K_020,
+    "M68K_030": CS_MODE_M68K_030,
+    "M68K_040": CS_MODE_M68K_040,
+    "M68K_060": CS_MODE_M68K_060,
+    "M680X_6301": CS_MODE_M680X_6301,
+    "M680X_6309": CS_MODE_M680X_6309,
+    "M680X_6800": CS_MODE_M680X_6800,
+    "M680X_6801": CS_MODE_M680X_6801,
+    "M680X_6805": CS_MODE_M680X_6805,
+    "M680X_6808": CS_MODE_M680X_6808,
+    "M680X_6809": CS_MODE_M680X_6809,
+    "M680X_6811": CS_MODE_M680X_6811,
+    "M680X_CPU12": CS_MODE_M680X_CPU12,
+    "M680X_HCS08": CS_MODE_M680X_HCS08,
+
 }
 
 
@@ -61,24 +88,31 @@ def get_mode_str(mode_val):
 @app.route('/api')
 def get_code():
     print('Request %s' % request, file=sys.stderr)
-    arch = CS_ARCH_X86
-    mode = CS_MODE_32
     json = request.get_json()
     if json.get('architecture') is not None:
         print('Arch %s' % json.get('architecture'), file=sys.stderr)
-        arch = get_arch(json.get('architecture').upper())
-        print('Get Arch String: %s ' % get_arch_str(arch), file=sys.stderr)
+        try:
+            arch = get_arch(json.get('architecture').upper())
+        except KeyError:
+            return f"ERROR: {json.get('architecture')} is not a supported architecture"
+    else:
+        return 'ERROR: architecture is none, architecture is required'
+
     if json.get('mode') is not None:
         print('Mode %s' % json.get('mode'), file=sys.stderr)
-        mode = get_mode(json.get('mode').upper())
+        try:
+            mode = get_mode(json.get('mode').upper())
+        except KeyError:
+            return f"ERROR: {json.get('mode')} is not a supported mode"
         print('Get Mode String: %s ' % get_mode_str(mode), file=sys.stderr)
+    else:
+        return 'ERROR: mode is none, mode is required'
 
     if json.get('hex') is not None:
         print('Hex: %s' % json.get('hex'), file=sys.stderr)
-        # hex = json.get('hex')
-    print('Arch %s' % json.get('arch'), file=sys.stderr)
-    print('Mode %s' % json.get('mode'), file=sys.stderr)
-    print('Hex: %s' % json.get('hex'), file=sys.stderr)
+    else:
+        return f"ERROR: hex is none, hex is required to execute"
+
     hex_string = json.get('hex')
     res_string = capstone(arch, mode, hex_string, syntax='intel')
 
@@ -105,7 +139,7 @@ def capstone(arch, mode, hex, syntax):
     md = Cs(arch, mode)
     for insn in md.disasm(hex_bytes, 0x0000):                           # Go through the array return after a successful execution
         print('Insn Bytes: %s ' % insn.bytes, file=sys.stderr)
-        result.machine_code.append(binascii.hexlify(insn.bytes, '-'))   # Convert bytes into an hex array 
+        result.machine_code.append(binascii.hexlify(insn.bytes, '-').decode('utf-8'))   # Convert bytes into an hex array 
         print('Insn: %s ' % insn.mnemonic, file=sys.stderr)
         result.instructions.append(insn.mnemonic)                       # Instructions that were disassembled
         print('Operand: %s ' % insn.op_str, file=sys.stderr)
@@ -129,16 +163,6 @@ def capstone(arch, mode, hex, syntax):
     }
 
     return jsonify(data)
-
-
-def generate_result_json(data):
-    return {
-        'mach_code': data.machine_code,
-        'instructions': data.instructions,
-        'operands': data.operands,
-        'byte_size': data.byte_size,
-        'addresses': data.addresses
-    }
 
 
 if __name__ == '__main__':
