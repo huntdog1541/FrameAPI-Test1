@@ -80,7 +80,7 @@ def get_assembly():
     
     return 'Get Assembly'
 
-def ks_execute(arch, mode, code, syntax=0):
+""" def ks_execute(arch, mode, code, syntax=0):
     ks = Ks(arch, mode)
     if syntax != 0:
         ks.syntax = syntax
@@ -88,7 +88,7 @@ def ks_execute(arch, mode, code, syntax=0):
     encoding, count = ks.asm(code)
     answer = [code]
 
-    hex_string = []
+    hex_string = [] """
 
 if __name__ == '__main__':
     keystone_execute(KS_ARCH_X86, KS_MODE_16, b"add eax, ecx")

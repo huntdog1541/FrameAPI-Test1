@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Uncomment the following COPY line and the corresponding lines in the `RUN` command if you wish to
 # include your requirements in the image itself. It is suggested that you only do this if your
 # requirements rarely (if ever) change.
-COPY requirements.txt /tmp/pip-tmp/
+# COPY requirements.txt /tmp/pip-tmp/
 
 # Configure apt and install packages
 RUN apt-get update \
@@ -37,8 +37,8 @@ RUN apt-get update \
     # && chmod 0440 /etc/sudoers.d/$USERNAME \
     #
     # Create alternate global install location that both uses have rights to access
-    && mkdir -p /usr/local/share/pip-global \
-    && chown ${USERNAME}:root /usr/local/share/pip-global \
+    # && mkdir -p /usr/local/share/pip-global \
+    # && chown ${USERNAME}:root /usr/local/share/pip-global \
     #
     # Clean up
     && apt-get autoremove -y \
