@@ -104,7 +104,6 @@ def get_code():
             mode = get_mode(json.get('mode').upper())
         except KeyError:
             return f"ERROR: {json.get('mode')} is not a supported mode"
-        print('Get Mode String: %s ' % get_mode_str(mode), file=sys.stderr)
     else:
         return 'ERROR: mode is none, mode is required'
 
@@ -119,46 +118,39 @@ def get_code():
     return res_string
 
 
-class Result():
-    def __init__(self):
-        pass
-
+def capstone(arch, mode, hex, syntax):
+    hex_bytes = binascii.unhexlify(hex)                                 # Convert a string of hex to a byte string 
+    print('Bytes: %s' % binascii.hexlify(hex_bytes, '-'), file=sys.stderr) 
     machine_code = []
     instructions = []
     operands = []
     addresses = []
-    byte_size = []
-
-
-def capstone(arch, mode, hex, syntax):
-    hex_bytes = binascii.unhexlify(hex)                                 # Convert a string of hex to a byte string 
-    print('Bytes: %s' % binascii.hexlify(hex_bytes, '-'), file=sys.stderr) 
-    result = Result(); 
+    byte_size = [] 
 
     # Execute the capstone  
     md = Cs(arch, mode)
     for insn in md.disasm(hex_bytes, 0x0000):                           # Go through the array return after a successful execution
         print('Insn Bytes: %s ' % insn.bytes, file=sys.stderr)
-        result.machine_code.append(binascii.hexlify(insn.bytes, '-').decode('utf-8'))   # Convert bytes into an hex array 
+        machine_code.append(binascii.hexlify(insn.bytes, '-').decode('utf-8'))   # Convert bytes into an hex array 
         print('Insn: %s ' % insn.mnemonic, file=sys.stderr)
-        result.instructions.append(insn.mnemonic)                       # Instructions that were disassembled
+        instructions.append(insn.mnemonic)                       # Instructions that were disassembled
         print('Operand: %s ' % insn.op_str, file=sys.stderr)
-        result.operands.append(insn.op_str)                             # Operands 
+        operands.append(insn.op_str)                             # Operands 
         print('Size: %s ' % insn.size, file=sys.stderr)
-        result.byte_size.append(insn.size)                              # the number of bytes 
+        byte_size.append(insn.size)                              # the number of bytes 
         print('Address: %s ' % insn.address, file=sys.stderr)
-        result.addresses.append(insn.address)                           # the next start address 
+        addresses.append(insn.address)                           # the next start address 
 
     # Generate the data object that is return as a json
     data = {
         'arch': get_arch_str(arch),
         'mode': get_mode_str(mode),
         'result': {
-            'mach_code': result.machine_code,
-            'instructions': result.instructions,
-            'operands': result.operands,
-            'byte_size': result.byte_size,
-            'addresses': result.addresses
+            'mach_code': machine_code,
+            'instructions': instructions,
+            'operands': operands,
+            'byte_size': byte_size,
+            'addresses': addresses
         }
     }
 
