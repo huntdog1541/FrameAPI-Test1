@@ -127,6 +127,8 @@ def capstone(arch, mode, hex, syntax):
     addresses = []
     byte_size = [] 
 
+    print('----------------------------------------------------------------', file=sys.stderr)
+
     # Execute the capstone  
     md = Cs(arch, mode)
     for insn in md.disasm(hex_bytes, 0x0000):                           # Go through the array return after a successful execution
@@ -139,7 +141,8 @@ def capstone(arch, mode, hex, syntax):
         print('Size: %s ' % insn.size, file=sys.stderr)
         byte_size.append(insn.size)                              # the number of bytes 
         print('Address: %s ' % insn.address, file=sys.stderr)
-        addresses.append(insn.address)                           # the next start address 
+        addresses.append(insn.address)                           # the next start address
+        print('----------------------------------------------------------------', file=sys.stderr)
 
     # Generate the data object that is return as a json
     data = {
