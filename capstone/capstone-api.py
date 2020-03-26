@@ -8,7 +8,7 @@ from capstone import *
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def status():
     return 'Up and Running'
 
@@ -85,7 +85,7 @@ def get_mode_str(mode_val):
     return None
 
 
-@app.route('/api')
+@app.route('/api', methods=['GET', 'POST'])
 def get_code():
     print('Request %s' % request, file=sys.stderr)
     json = request.get_json()
@@ -148,8 +148,9 @@ def capstone(arch, mode, hex, syntax):
     data = {
         'arch': get_arch_str(arch),
         'mode': get_mode_str(mode),
+        'hex': hex,
         'result': {
-            'mach_code': machine_code,
+            'machine_code': machine_code,
             'instructions': instructions,
             'operands': operands,
             'byte_size': byte_size,
